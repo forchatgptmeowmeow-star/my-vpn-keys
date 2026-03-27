@@ -1,0 +1,31 @@
+name: Update VPN Keys
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # каждый день в 6 утра
+  workflow_dispatch:       # ручной запуск
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install aiohttp
+
+      - name: Run collector
+        run: python vless_collector.py
+
+      - name: Save keys
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add vless_keys.txt
+          git commit -m "Update keys" || echo "No changes"
+          git push
